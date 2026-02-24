@@ -1,0 +1,183 @@
+[
+  {
+    "left": {
+      "name": "Москва"
+    },
+    "right": [
+      {
+        "target": {
+          "name": "Санкт-Петербург"
+        },
+        "weight": 0
+      },
+      {
+        "target": {
+          "name": "Архангельск"
+        },
+        "weight": 0
+      },
+      {
+        "target": {
+          "name": "Тверь"
+        },
+        "weight": 0
+      },
+      {
+        "target": {
+          "name": "Саратов"
+        },
+        "weight": 0
+      },
+      {
+        "target": {
+          "name": "Астрахань"
+        },
+        "weight": 0
+      }
+    ]
+  },
+  {
+    "left": {
+      "name": "Санкт-Петербург"
+    },
+    "right": [
+      {
+        "target": {
+          "name": "Москва"
+        },
+        "weight": 0
+      },
+      {
+        "target": {
+          "name": "Архангельск"
+        },
+        "weight": 0
+      },
+      {
+        "target": {
+          "name": "Новосибирск"
+        },
+        "weight": 0
+      },
+      {
+        "target": {
+          "name": "Саратов"
+        },
+        "weight": 0
+      }
+    ]
+  },
+  {
+    "left": {
+      "name": "Архангельск"
+    },
+    "right": [
+      {
+        "target": {
+          "name": "Москва"
+        },
+        "weight": 0
+      },
+      {
+        "target": {
+          "name": "Санкт-Петербург"
+        },
+        "weight": 0
+      },
+      {
+        "target": {
+          "name": "Новосибирск"
+        },
+        "weight": 0
+      }
+    ]
+  },
+  {
+    "left": {
+      "name": "Тверь"
+    },
+    "right": [
+      {
+        "target": {
+          "name": "Москва"
+        },
+        "weight": 0
+      },
+      {
+        "target": {
+          "name": "Тверь"
+        },
+        "weight": 0
+      }
+    ]
+  },
+  {
+    "left": {
+      "name": "Саратов"
+    },
+    "right": [
+      {
+        "target": {
+          "name": "Москва"
+        },
+        "weight": 0
+      },
+      {
+        "target": {
+          "name": "Санкт-Петербург"
+        },
+        "weight": 0
+      },
+      {
+        "target": {
+          "name": "Астрахань"
+        },
+        "weight": 0
+      }
+    ]
+  },
+  {
+    "left": {
+      "name": "Изолированный секретный город"
+    },
+    "right": []
+  },
+  {
+    "left": {
+      "name": "Новосибирск"
+    },
+    "right": [
+      {
+        "target": {
+          "name": "Санкт-Петербург"
+        },
+        "weight": 0
+      },
+      {
+        "target": {
+          "name": "Архангельск"
+        },
+        "weight": 0
+      }
+    ]
+  },
+  {
+    "left": {
+      "name": "Астрахань"
+    },
+    "right": [
+      {
+        "target": {
+          "name": "Москва"
+        },
+        "weight": 0
+      },
+      {
+        "target": {
+          "name": "Саратов"
+        },
+        "weight": 0
+      }
+    ]
+  }
+]
