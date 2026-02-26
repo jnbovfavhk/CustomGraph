@@ -108,5 +108,10 @@ public class Main {
 
         orientedGraph.saveGraph("orientedGraph.json");
 
+
+        CustomGraph newGraph = new CustomGraph("orientedGraph.json");
+        newGraph.saveGraph("og2save.json");
+
+        ConsoleInterface.execute();
     }
 }

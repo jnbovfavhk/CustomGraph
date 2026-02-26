@@ -9,10 +9,10 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 
 public class CustomGraph {
-    private static List<MutablePair<GraphObj, List<Edge>>> adjacencyList;
+    private static HashMap<GraphObj, List<Edge>> adjacencyList;
 
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-    private final Type graphType = new TypeToken<ArrayList<MutablePair<GraphObj, List<GraphObj>>>>() {}.getType();
+    private final Type graphType = new TypeToken<ArrayList<Pair>>() {}.getType();
 
 
     // Конструкторы
@@ -38,14 +38,14 @@ public class CustomGraph {
         return adjacencyList.size();
     }
 
-    public List<MutablePair<GraphObj, List<Edge>>> getAdjacencyList() {
+    public List<Pair> getAdjacencyList() {
         return adjacencyList;
     }
 
     // Методы
     // Добавить вершину(без соседей)
     public void addNode(String nodeName) {
-        adjacencyList.add(new MutablePair<>(new GraphObj(nodeName), new ArrayList<>()));
+        adjacencyList.add(new Pair(new GraphObj(nodeName), new ArrayList<>()));
     }
 
     // Добавить двустороннее ребро без веса
@@ -56,7 +56,7 @@ public class CustomGraph {
     // Добавить двустороннее ребро с весом
     public int addEdge(String node1, String node2, int weight) {
         int breakCounter = 2;
-        for (MutablePair<GraphObj, List<Edge>> graphObjListMutablePair : adjacencyList) {
+        for (Pair graphObjListMutablePair : adjacencyList) {
 
 
             if (graphObjListMutablePair.getKey().getName().equals(node1)) {
@@ -77,7 +77,7 @@ public class CustomGraph {
 
     // Добавить одностороннее ребро с весом
     public int addOrientedEdge(String node1, String node2, int weight) {
-        for (MutablePair<GraphObj, List<Edge>> graphObjListMutablePair : adjacencyList) {
+        for (Pair graphObjListMutablePair : adjacencyList) {
             if (graphObjListMutablePair.getKey().getName().equals(node1)) {
                 graphObjListMutablePair.getValue().add(new Edge(new GraphObj(node2), weight));
                 return 0;
@@ -107,7 +107,7 @@ public class CustomGraph {
 
     // Удалить все ребра, связанные с вершиной
     private void removeEdgesTo(GraphObj node) {
-        for (MutablePair<GraphObj, List<Edge>> graphObjListMutablePair : adjacencyList) {
+        for (Pair graphObjListMutablePair : adjacencyList) {
             for (int j = 0; j < graphObjListMutablePair.getValue().size(); j++) {
                 if (graphObjListMutablePair.getValue().get(j).getTarget().equals(node)) {
                     graphObjListMutablePair.getValue().remove(j);
@@ -122,7 +122,7 @@ public class CustomGraph {
     public int removeEdge(String node1, String node2) {
         int breakCounter = 2;
 
-        for (MutablePair<GraphObj, List<Edge>> graphObjListMutablePair : adjacencyList) {
+        for (Pair graphObjListMutablePair : adjacencyList) {
 
 
             if (graphObjListMutablePair.getKey().getName().equals(node1)) {
@@ -152,9 +152,9 @@ public class CustomGraph {
         return -1;
     }
 
-    // Удалить одностороннее ребро \
+    // Удалить одностороннее ребро
     public int removeOrientedEdge(String node1, String node2) {
-        for (MutablePair<GraphObj, List<Edge>> graphObjListMutablePair : adjacencyList) {
+        for (Pair graphObjListMutablePair : adjacencyList) {
             if (graphObjListMutablePair.getKey().getName().equals(node1)) {
                 for (int j = 0; j < graphObjListMutablePair.getValue().size(); j++) {
                     if (graphObjListMutablePair.getValue().get(j).getTarget().getName().equals(node2)) {
@@ -179,7 +179,7 @@ public class CustomGraph {
     }
 
     // Загрузить из JSON-формата
-    private ArrayList<MutablePair<GraphObj, List<Edge>>> loadGraph(
+    private ArrayList<Pair> loadGraph(
             String filename) throws IOException {
         try (Reader reader = new FileReader(filename)) {
             return gson.fromJson(reader, graphType);

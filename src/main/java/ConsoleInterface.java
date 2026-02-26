@@ -1,3 +1,5 @@
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -6,6 +8,7 @@ import java.util.Scanner;
 
 public class ConsoleInterface {
     private static CustomGraph graph;
+    private static String type;
     private static Scanner sc;
 
     private static int takeValidNumber(int start, int end) {
@@ -13,7 +16,7 @@ public class ConsoleInterface {
         boolean validInput = false;
 
         while (!validInput) {
-            String ansString = sc.next();
+            String ansString = sc.nextLine();
 
             try {
                 ans = Integer.parseInt(ansString);
@@ -45,43 +48,85 @@ public class ConsoleInterface {
 
         int ans = takeValidNumber(1, 5);
 
-
+        graph = new CustomGraph();
         switch (ans) {
             case 1:
                 defaultGraph();
+                break;
             case 2:
                 orientedGraph();
+                break;
             case 3:
                 weightedGraph();
+                break;
             case 4:
                 orientedWeightedGraph();
+                break;
+            case 5:
+                takeGraphFromFile();
+        }
+    }
+
+    private static void takeGraphFromFile() {
+        System.out.println("Enter the name of a file:");
+
+        String fileName = sc.nextLine();
+        try {
+            graph = new CustomGraph(fileName + ".json");
+
+            Scanner scanner = new Scanner(new File(fileName + ".txt"));
+            type = scanner.nextLine();
+            scanner.close();
+
+            switch (type) {
+                case "default":
+                    defaultGraph();
+                    break;
+                case "oriented":
+                    orientedGraph();
+                    break;
+                case "weighted":
+                    weightedGraph();
+                    break;
+                case "orientedWeighted":
+                    orientedWeightedGraph();
+                    break;
+            }
+        } catch (IOException e) {
+            System.out.printf("No such file: %s\n", fileName);
         }
     }
 
     private static void defaultGraph() throws IOException {
-        graph = new CustomGraph();
-        System.out.println("Choose the option:");
-        System.out.println("1 Add node");
-        System.out.println("2 Add edge");
-        System.out.println("3 Remove node");
-        System.out.println("4 Remove edge");
-        System.out.println("5 Save to file");
-        System.out.println("6 Exit");
+
+        type = "default";
 
         int ans = 0;
         while (ans != 6) {
+            System.out.println("Choose the option:");
+            System.out.println("1 Add node");
+            System.out.println("2 Add edge");
+            System.out.println("3 Remove node");
+            System.out.println("4 Remove edge");
+            System.out.println("5 Save to file");
+            System.out.println("6 Exit");
             ans = takeValidNumber(1, 6);
             switch (ans) {
                 case 1:
                     addNode();
+                    break;
                 case 2:
                     defaultAddEdge();
+                    break;
                 case 3:
                     removeNode();
+                    break;
                 case 4:
                     defaultRemoveEdge();
+                    break;
                 case 5:
                     save();
+                    break;
             }
         }
 
@@ -89,16 +134,20 @@ public class ConsoleInterface {
 
     private static void save() throws IOException {
         System.out.println("Enter the name of a file");
-        String ans = sc.next();
+        String ans = sc.nextLine();
         while (ans.isEmpty()) {
-            ans = sc.next();
+            ans = sc.nextLine();
         }
-        graph.saveGraph(ans);
+        graph.saveGraph(ans + ".json");
+
+        FileWriter writer = new FileWriter(ans + ".txt");
+        writer.write(type);
+        writer.close();
     }
 
     private static void removeNode() {
         System.out.println("Enter the name of a node to remove");
-        String ans = sc.next();
+        String ans = sc.nextLine();
         int result = graph.removeNode(ans);
         if (result == -1) {
             System.out.printf("No such node with name '%s'", ans);
@@ -120,6 +169,7 @@ public class ConsoleInterface {
         System.out.println("Enter 2 nodes to remove an edge between them(via new line)");
         String node1 = sc.nextLine();
         String node2 = sc.nextLine();
+        System.out.printf("%s, %s", node1, node2);
 
         int result = graph.addEdge(node1, node2);
         if (result == -1) {
@@ -129,36 +179,41 @@ public class ConsoleInterface {
 
     private static void addNode() {
         System.out.println("Enter the name of a node to add");
-        String ans = sc.next();
+        String ans = sc.nextLine();
         graph.addNode(ans);
         System.out.println("Node added");
     }
 
 
     private static void orientedGraph() throws IOException {
-        graph = new CustomGraph();
-        System.out.println("Choose the option:");
-        System.out.println("1 Add node");
-        System.out.println("2 Add edge");
-        System.out.println("3 Remove node");
-        System.out.println("4 Remove edge");
-        System.out.println("5 Save to file");
-        System.out.println("6 Exit");
 
+        type = "oriented";
         int ans = 0;
         while (ans != 6) {
+            System.out.println("Choose the option:");
+            System.out.println("1 Add node");
+            System.out.println("2 Add edge");
+            System.out.println("3 Remove node");
+            System.out.println("4 Remove edge");
+            System.out.println("5 Save to file");
+            System.out.println("6 Exit");
             ans = takeValidNumber(1, 6);
             switch (ans) {
                 case 1:
                     addNode();
+                    break;
                 case 2:
                     orientedAddEdge();
+                    break;
                 case 3:
                     removeNode();
+                    break;
                 case 4:
                     orientedRemoveEdge();
+                    break;
                 case 5:
                     save();
+                    break;
             }
         }
     }
@@ -187,35 +242,41 @@ public class ConsoleInterface {
 
 
     private static void weightedGraph() throws IOException {
-        graph = new CustomGraph();
-        System.out.println("Choose the option:");
-        System.out.println("1 Add node");
-        System.out.println("2 Add edge");
-        System.out.println("3 Remove node");
-        System.out.println("4 Remove edge");
-        System.out.println("5 Save to file");
-        System.out.println("6 Exit");
+
+        type = "weighted";
 
         int ans = 0;
         while (ans != 6) {
+            System.out.println("Choose the option:");
+            System.out.println("1 Add node");
+            System.out.println("2 Add edge");
+            System.out.println("3 Remove node");
+            System.out.println("4 Remove edge");
+            System.out.println("5 Save to file");
+            System.out.println("6 Exit");
             ans = takeValidNumber(1, 6);
             switch (ans) {
                 case 1:
                     addNode();
+                    break;
                 case 2:
                     weightedAddEdge();
+                    break;
                 case 3:
                     removeNode();
+                    break;
                 case 4:
                     defaultRemoveEdge();
+                    break;
                 case 5:
                     save();
+                    break;
             }
         }
     }
 
     private static void weightedAddEdge() {
-        System.out.println("Enter 2 nodes to remove an edge between them and the weight(via new line)");
+        System.out.println("Enter 2 nodes to add an edge between them and the weight(via new line)");
         String node1 = sc.nextLine();
         String node2 = sc.nextLine();
         int weight = 0;
@@ -235,29 +296,35 @@ public class ConsoleInterface {
     }
 
     private static void orientedWeightedGraph() throws IOException {
-        graph = new CustomGraph();
-        System.out.println("Choose the option:");
-        System.out.println("1 Add node");
-        System.out.println("2 Add edge");
-        System.out.println("3 Remove node");
-        System.out.println("4 Remove edge");
-        System.out.println("5 Save to file");
-        System.out.println("6 Exit");
+
+        type = "orientedWeighted";
 
         int ans = 0;
         while (ans != 6) {
+            System.out.println("Choose the option:");
+            System.out.println("1 Add node");
+            System.out.println("2 Add edge");
+            System.out.println("3 Remove node");
+            System.out.println("4 Remove edge");
+            System.out.println("5 Save to file");
+            System.out.println("6 Exit");
             ans = takeValidNumber(1, 6);
             switch (ans) {
                 case 1:
                     addNode();
+                    break;
                 case 2:
                     orientedWeightedAddEdge();
+                    break;
                 case 3:
                     removeNode();
+                    break;
                 case 4:
                     orientedRemoveEdge();
+                    break;
                 case 5:
                     save();
+                    break;
             }
         }
     }
