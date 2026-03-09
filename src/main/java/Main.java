@@ -94,17 +94,17 @@ public class Main {
         orientedGraph.addNode("Новосибирск");
         orientedGraph.addNode("Астрахань");
 
-        orientedGraph.addOrientedEdge("Москва", "Санкт-Петербург", 400);
-        orientedGraph.addOrientedEdge("Москва", "Архангельск", 1000);
-        orientedGraph.addOrientedEdge("Москва", "Тверь", 100);
-        orientedGraph.addOrientedEdge("Москва", "Саратов", 1800);
-        orientedGraph.addOrientedEdge("Москва", "Астрахань", 2000);
-        orientedGraph.addOrientedEdge("Санкт-Петербург", "Архангельск", 1300);
-        orientedGraph.addOrientedEdge("Санкт-Петербург", "Новосибирск", 3000);
-        orientedGraph.addOrientedEdge("Санкт-Петербург", "Саратов", 1600);
-        orientedGraph.addOrientedEdge("Саратов", "Астрахань", 200);
-        orientedGraph.addOrientedEdge("Архангельск", "Новосибирск", 1000);
-        orientedGraph.addOrientedEdge("Тверь", "Тверь", 20);
+        orientedGraph.addOrientedEdge("Москва", "Санкт-Петербург");
+        orientedGraph.addOrientedEdge("Москва", "Архангельск");
+        orientedGraph.addOrientedEdge("Москва", "Тверь");
+        orientedGraph.addOrientedEdge("Москва", "Саратов");
+        orientedGraph.addOrientedEdge("Москва", "Астрахань");
+        orientedGraph.addOrientedEdge("Санкт-Петербург", "Архангельск");
+        orientedGraph.addOrientedEdge("Санкт-Петербург", "Новосибирск");
+        orientedGraph.addOrientedEdge("Санкт-Петербург", "Саратов");
+        orientedGraph.addOrientedEdge("Саратов", "Астрахань");
+        orientedGraph.addOrientedEdge("Архангельск", "Новосибирск");
+        orientedGraph.addOrientedEdge("Тверь", "Тверь");
 
         orientedGraph.saveGraph("orientedGraph.json");
 

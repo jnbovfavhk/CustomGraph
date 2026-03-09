@@ -102,15 +102,17 @@ public class ConsoleInterface {
         type = "default";
 
         int ans = 0;
-        while (ans != 6) {
+        while (ans != 8) {
             System.out.println("Choose the option:");
             System.out.println("1 Add node");
             System.out.println("2 Add edge");
             System.out.println("3 Remove node");
             System.out.println("4 Remove edge");
             System.out.println("5 Save to file");
-            System.out.println("6 Exit");
-            ans = takeValidNumber(1, 6);
+            System.out.println("6 Print adjacency list");
+            System.out.println("7 Print graph type");
+            System.out.println("8 Exit");
+            ans = takeValidNumber(1, 8);
             switch (ans) {
                 case 1:
                     addNode();
@@ -126,6 +128,12 @@ public class ConsoleInterface {
                     break;
                 case 5:
                     save();
+                    break;
+                case 6:
+                    printAdjList();
+                    break;
+                case 7:
+                    printType();
                     break;
             }
         }
@@ -166,7 +174,7 @@ public class ConsoleInterface {
     }
 
     private static void defaultAddEdge() {
-        System.out.println("Enter 2 nodes to remove an edge between them(via new line)");
+        System.out.println("Enter 2 nodes to add an edge between them(via new line)");
         String node1 = sc.nextLine();
         String node2 = sc.nextLine();
         System.out.printf("%s, %s", node1, node2);
@@ -189,15 +197,17 @@ public class ConsoleInterface {
 
         type = "oriented";
         int ans = 0;
-        while (ans != 6) {
+        while (ans != 8) {
             System.out.println("Choose the option:");
             System.out.println("1 Add node");
             System.out.println("2 Add edge");
             System.out.println("3 Remove node");
             System.out.println("4 Remove edge");
             System.out.println("5 Save to file");
-            System.out.println("6 Exit");
-            ans = takeValidNumber(1, 6);
+            System.out.println("6 Print adjacency list");
+            System.out.println("7 Print graph type");
+            System.out.println("8 Exit");
+            ans = takeValidNumber(1, 8);
             switch (ans) {
                 case 1:
                     addNode();
@@ -213,6 +223,12 @@ public class ConsoleInterface {
                     break;
                 case 5:
                     save();
+                    break;
+                case 6:
+                    printAdjList();
+                    break;
+                case 7:
+                    printType();
                     break;
             }
         }
@@ -230,7 +246,7 @@ public class ConsoleInterface {
     }
 
     private static void orientedAddEdge() {
-        System.out.println("Enter 2 nodes to remove an edge between them(via new line)");
+        System.out.println("Enter 2 nodes to add an edge between them(via new line)");
         String node1 = sc.nextLine();
         String node2 = sc.nextLine();
 
@@ -246,15 +262,17 @@ public class ConsoleInterface {
         type = "weighted";
 
         int ans = 0;
-        while (ans != 6) {
+        while (ans != 8) {
             System.out.println("Choose the option:");
             System.out.println("1 Add node");
             System.out.println("2 Add edge");
             System.out.println("3 Remove node");
             System.out.println("4 Remove edge");
             System.out.println("5 Save to file");
-            System.out.println("6 Exit");
-            ans = takeValidNumber(1, 6);
+            System.out.println("6 Print adjacency list");
+            System.out.println("7 Print graph type");
+            System.out.println("8 Exit");
+            ans = takeValidNumber(1, 8);
             switch (ans) {
                 case 1:
                     addNode();
@@ -270,6 +288,12 @@ public class ConsoleInterface {
                     break;
                 case 5:
                     save();
+                    break;
+                case 6:
+                    printAdjList();
+                    break;
+                case 7:
+                    printType();
                     break;
             }
         }
@@ -300,15 +324,17 @@ public class ConsoleInterface {
         type = "orientedWeighted";
 
         int ans = 0;
-        while (ans != 6) {
+        while (ans != 8) {
             System.out.println("Choose the option:");
             System.out.println("1 Add node");
             System.out.println("2 Add edge");
             System.out.println("3 Remove node");
             System.out.println("4 Remove edge");
             System.out.println("5 Save to file");
-            System.out.println("6 Exit");
-            ans = takeValidNumber(1, 6);
+            System.out.println("6 Print adjacency list");
+            System.out.println("7 Print graph type");
+            System.out.println("8 Exit");
+            ans = takeValidNumber(1, 8);
             switch (ans) {
                 case 1:
                     addNode();
@@ -325,12 +351,18 @@ public class ConsoleInterface {
                 case 5:
                     save();
                     break;
+                case 6:
+                    printAdjList();
+                    break;
+                case 7:
+                    printType();
+                    break;
             }
         }
     }
 
     private static void orientedWeightedAddEdge() {
-        System.out.println("Enter 2 nodes to remove an edge between them and the weight(via new line)");
+        System.out.println("Enter 2 nodes to add an edge between them and the weight(via new line)");
         String node1 = sc.nextLine();
         String node2 = sc.nextLine();
         int weight = 0;
@@ -349,5 +381,31 @@ public class ConsoleInterface {
         }
     }
 
+    public static void printAdjList() {
+        if (graph == null || graph.getNodeCount() == 0) {
+            System.out.println("Graph is empty");
+            return;
+        }
 
+        for (var entry : graph.getAdjacencyList().entrySet()) {
+            System.out.print(entry.getKey().getName() + " -> ");
+
+            if (entry.getValue().isEmpty()) {
+                System.out.println("no neighbors");
+            } else {
+                var neighbors = new ArrayList<String>();
+                for (var neighbor : entry.getValue().entrySet()) {
+                    String s = neighbor.getKey().getName();
+                    if (type.equals("weighted") || type.equals("orientedWeighted"))
+                        s += "(" + neighbor.getValue() + ")";
+                    neighbors.add(s);
+                }
+                System.out.println(String.join(", ", neighbors));
+            }
+        }
+    }
+
+    public static void printType() {
+        System.out.println("Type: " + (type != null ? type : "not set"));
+    }
 }

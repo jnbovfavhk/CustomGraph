@@ -2,6 +2,7 @@ import org.apache.commons.lang3.tuple.MutablePair;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -9,16 +10,19 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 
 public class CustomGraph {
-    private static HashMap<GraphObj, List<Edge>> adjacencyList;
+    private HashMap<GraphObj, HashMap<GraphObj, Double>> adjacencyList;
 
-    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-    private final Type graphType = new TypeToken<ArrayList<Pair>>() {}.getType();
+    private final Gson gson = new GsonBuilder()
+            .setPrettyPrinting()
+            .enableComplexMapKeySerialization()
+            .create();
+    private final Type graphType = new TypeToken<HashMap<GraphObj, HashMap<GraphObj, Double>>>() {}.getType();
 
 
     // Конструкторы
     // Пустой
     public CustomGraph() {
-        adjacencyList = new ArrayList<>();
+        adjacencyList = new HashMap<>();
 
     }
 
@@ -38,14 +42,14 @@ public class CustomGraph {
         return adjacencyList.size();
     }
 
-    public List<Pair> getAdjacencyList() {
+    public HashMap<GraphObj, HashMap<GraphObj, Double>> getAdjacencyList() {
         return adjacencyList;
     }
 
     // Методы
     // Добавить вершину(без соседей)
     public void addNode(String nodeName) {
-        adjacencyList.add(new Pair(new GraphObj(nodeName), new ArrayList<>()));
+        adjacencyList.put(new GraphObj(nodeName), new HashMap<>());
     }
 
     // Добавить двустороннее ребро без веса
@@ -54,34 +58,28 @@ public class CustomGraph {
     }
 
     // Добавить двустороннее ребро с весом
-    public int addEdge(String node1, String node2, int weight) {
-        int breakCounter = 2;
-        for (Pair graphObjListMutablePair : adjacencyList) {
+    public int addEdge(String node1, String node2, double weight) {
 
+        GraphObj node1Obj = new GraphObj(node1);
+        GraphObj node2Obj = new GraphObj(node2);
 
-            if (graphObjListMutablePair.getKey().getName().equals(node1)) {
-                graphObjListMutablePair.getValue().add(new Edge(new GraphObj(node2), weight));
-                breakCounter -= 1;
-            } else if (graphObjListMutablePair.getKey().getName().equals(node2)) {
-                graphObjListMutablePair.getValue().add(new Edge(new GraphObj(node1), weight));
-                breakCounter -= 1;
-            }
-
-            if (breakCounter == 0) {
-                return 0;
-            }
+        if (adjacencyList.containsKey(node1Obj) && adjacencyList.containsKey(node2Obj)) {
+            adjacencyList.get(node1Obj).put(new GraphObj(node2), weight);
+            adjacencyList.get(node2Obj).put(new GraphObj(node1), weight);
+            return 0;
         }
 
         return -1;
     }
 
     // Добавить одностороннее ребро с весом
-    public int addOrientedEdge(String node1, String node2, int weight) {
-        for (Pair graphObjListMutablePair : adjacencyList) {
-            if (graphObjListMutablePair.getKey().getName().equals(node1)) {
-                graphObjListMutablePair.getValue().add(new Edge(new GraphObj(node2), weight));
-                return 0;
-            }
+    public int addOrientedEdge(String node1, String node2, double weight) {
+        GraphObj node1Obj = new GraphObj(node1);
+        GraphObj node2Obj = new GraphObj(node2);
+
+        if (adjacencyList.containsKey(node1Obj) && adjacencyList.containsKey(node2Obj)) {
+            adjacencyList.get(node1Obj).put(new GraphObj(node2), weight);
+            return 0;
         }
 
         return -1;
@@ -95,58 +93,31 @@ public class CustomGraph {
 
     // Удалить вершину
     public int removeNode(String node) {
-        for (int i = 0; i < adjacencyList.size(); i++) {
-            if (adjacencyList.get(i).getKey().getName().equals(node)) {
-                removeEdgesTo(adjacencyList.get(i).getKey());
-                adjacencyList.remove(i);
-                return 0;
-            }
-        }
-        return -1;
+
+        GraphObj nodeObj = new GraphObj(node);
+
+        adjacencyList.remove(nodeObj);
+
+        removeEdgesTo(nodeObj);
+
+        return 0;
     }
 
     // Удалить все ребра, связанные с вершиной
     private void removeEdgesTo(GraphObj node) {
-        for (Pair graphObjListMutablePair : adjacencyList) {
-            for (int j = 0; j < graphObjListMutablePair.getValue().size(); j++) {
-                if (graphObjListMutablePair.getValue().get(j).getTarget().equals(node)) {
-                    graphObjListMutablePair.getValue().remove(j);
-                    break;
-                }
-            }
-
+        for (GraphObj key : adjacencyList.keySet()) {
+            adjacencyList.get(key).remove(node);
         }
     }
 
     // Удалить двустороннее ребро
     public int removeEdge(String node1, String node2) {
-        int breakCounter = 2;
-
-        for (Pair graphObjListMutablePair : adjacencyList) {
-
-
-            if (graphObjListMutablePair.getKey().getName().equals(node1)) {
-                for (int j = 0; j < graphObjListMutablePair.getValue().size(); j++) {
-                    if (graphObjListMutablePair.getValue().get(j).getTarget().getName().equals(node2)) {
-                        graphObjListMutablePair.getValue().remove(j);
-                        breakCounter -= 1;
-                        break;
-                    }
-                }
-
-            } else if (graphObjListMutablePair.getKey().getName().equals(node2)) {
-                for (int j = 0; j < graphObjListMutablePair.getValue().size(); j++) {
-                    if (graphObjListMutablePair.getValue().get(j).getTarget().getName().equals(node1)) {
-                        graphObjListMutablePair.getValue().remove(j);
-                        breakCounter -= 1;
-                        break;
-                    }
-                }
-            }
-
-            if (breakCounter == 0) {
-                return 0;
-            }
+        GraphObj node1Obj = new GraphObj(node1);
+        GraphObj node2Obj = new GraphObj(node2);
+        if (adjacencyList.containsKey(node1Obj) && adjacencyList.containsKey(node2Obj)) {
+            adjacencyList.get(node1Obj).remove(node2Obj);
+            adjacencyList.get(node2Obj).remove(node1Obj);
+            return 0;
         }
 
         return -1;
@@ -154,16 +125,9 @@ public class CustomGraph {
 
     // Удалить одностороннее ребро
     public int removeOrientedEdge(String node1, String node2) {
-        for (Pair graphObjListMutablePair : adjacencyList) {
-            if (graphObjListMutablePair.getKey().getName().equals(node1)) {
-                for (int j = 0; j < graphObjListMutablePair.getValue().size(); j++) {
-                    if (graphObjListMutablePair.getValue().get(j).getTarget().getName().equals(node2)) {
-                        graphObjListMutablePair.getValue().remove(j);
-                        break;
-                    }
-                }
-
-            }
+        GraphObj node1Obj = new GraphObj(node1);
+        if (adjacencyList.containsKey(node1Obj)) {
+            adjacencyList.get(node1Obj).remove(new GraphObj(node2));
         }
         return 0;
     }
@@ -179,7 +143,7 @@ public class CustomGraph {
     }
 
     // Загрузить из JSON-формата
-    private ArrayList<Pair> loadGraph(
+    private HashMap<GraphObj, HashMap<GraphObj, Double>> loadGraph(
             String filename) throws IOException {
         try (Reader reader = new FileReader(filename)) {
             return gson.fromJson(reader, graphType);
