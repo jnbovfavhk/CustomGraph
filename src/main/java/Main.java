@@ -112,6 +112,35 @@ public class Main {
         CustomGraph newGraph = new CustomGraph("orientedGraph.json");
         newGraph.saveGraph("og2save.json");
 
-        ConsoleInterface.execute();
+        newGraph.printOneSideNeighboursList("Санкт-Петербург");
+        newGraph.printAllNeighboursList("Санкт-Петербург");
+
+
+        CustomGraph task4Graph = new CustomGraph();
+        task4Graph.addNode("a");
+        task4Graph.addNode("b");
+        task4Graph.addNode("c");
+        task4Graph.addNode("d");
+        task4Graph.addNode("e");
+        task4Graph.addNode("f");
+        task4Graph.addNode("g");
+        task4Graph.addNode("h");
+        task4Graph.addNode("j");
+        task4Graph.addNode("k");
+        task4Graph.addEdge("a", "b");
+        task4Graph.addEdge("c", "b");
+        task4Graph.addEdge("c", "d");
+        task4Graph.addEdge("d", "g");
+        task4Graph.addEdge("j", "k");
+        task4Graph.addEdge("h", "f");
+        task4Graph.addEdge("f", "a");
+        task4Graph.addEdge("e", "e");
+        task4Graph.addEdge("g", "k");
+        task4Graph.addEdge("e", "f");
+
+        task4Graph.removeEdgesBetweenSameDegree();
+        task4Graph.saveGraph("4thTaskGraph.json");
+
+//        ConsoleInterface.execute();
     }
 }

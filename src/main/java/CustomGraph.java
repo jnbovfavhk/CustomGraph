@@ -1,9 +1,8 @@
 import org.apache.commons.lang3.tuple.MutablePair;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -148,5 +147,64 @@ public class CustomGraph {
         try (Reader reader = new FileReader(filename)) {
             return gson.fromJson(reader, graphType);
         }
+    }
+
+    // Для данной вершины орграфа вывести все «выходящие» соседние вершины
+    public void printOneSideNeighboursList(String node) {
+        GraphObj graphObj = new GraphObj(node);
+        if (adjacencyList.containsKey(graphObj)) {
+            System.out.println(adjacencyList.get(graphObj));
+        }
+    }
+
+    // Вывести те вершины орграфа, которые являются одновременно заходящими и выходящими для заданной вершины
+    public void printAllNeighboursList(String node) {
+        GraphObj graphObj = new GraphObj(node);
+        if (adjacencyList.containsKey(graphObj)) {
+            Set<GraphObj> oneSide = adjacencyList.get(graphObj).keySet();
+            Set<GraphObj> otherSide = new java.util.HashSet<>(Set.of());
+
+            for (GraphObj key : adjacencyList.keySet()) {
+                if (adjacencyList.get(key).containsKey(graphObj)) {
+                    otherSide.add(key);
+                }
+            }
+
+            System.out.println("Выходящие: ");
+            System.out.println(oneSide);
+            System.out.println("Заходящие: ");
+            System.out.println(otherSide);
+        }
+    }
+
+    // Построить граф, полученный однократным удалением рёбер, соединяющих вершины одинаковой степени
+    public int removeEdgesBetweenSameDegree() {
+        // Собираем рёбра для удаления
+        HashMap<GraphObj, GraphObj> edgesToRemove = new HashMap<>();
+
+        for (Map.Entry<GraphObj, HashMap<GraphObj, Double>> entry : adjacencyList.entrySet()) {
+            GraphObj from = entry.getKey();
+
+            for (Map.Entry<GraphObj, Double> neighborEntry : entry.getValue().entrySet()) {
+                GraphObj to = neighborEntry.getKey();
+
+                int degreeFrom = adjacencyList.get(from).size();
+                int degreeTo = adjacencyList.get(to).size();
+                System.out.println(from + " " + degreeFrom + " " + to + " " + degreeTo);
+
+                // Если степени одинаковые - помечаем ребро для удаления
+                if (degreeFrom == degreeTo) {
+
+                    edgesToRemove.put(from, to);
+                }
+            }
+        }
+
+        for (Map.Entry<GraphObj, GraphObj> edge : edgesToRemove.entrySet()) {
+            System.out.println("Удаляем " + edge.getKey().toString() + " " + edge.getValue().toString());
+            removeEdge(edge.getKey().toString(), edge.getValue().toString());
+        }
+
+        return 0;
     }
 }
