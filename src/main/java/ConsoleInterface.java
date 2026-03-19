@@ -1,10 +1,9 @@
+import org.apache.commons.lang3.tuple.MutablePair;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class ConsoleInterface {
     private static CustomGraph graph;
@@ -197,7 +196,7 @@ public class ConsoleInterface {
 
         type = "oriented";
         int ans = 0;
-        while (ans != 8) {
+        while (ans != 10) {
             System.out.println("Choose the option:");
             System.out.println("1 Add node");
             System.out.println("2 Add edge");
@@ -206,8 +205,10 @@ public class ConsoleInterface {
             System.out.println("5 Save to file");
             System.out.println("6 Print adjacency list");
             System.out.println("7 Print graph type");
-            System.out.println("8 Exit");
-            ans = takeValidNumber(1, 8);
+            System.out.println("8 Print outgoing nodes");
+            System.out.println("9 Print outgoing and incoming nodes");
+            System.out.println("10 Exit");
+            ans = takeValidNumber(1, 10);
             switch (ans) {
                 case 1:
                     addNode();
@@ -229,6 +230,12 @@ public class ConsoleInterface {
                     break;
                 case 7:
                     printType();
+                    break;
+                case 8:
+                    printOneSideNeighboursList();
+                    break;
+                case 9:
+                    printAllNeighboursList();
                     break;
             }
         }
@@ -252,6 +259,39 @@ public class ConsoleInterface {
 
         int result = graph.addOrientedEdge(node1, node2);
         if (result == -1) {
+            System.out.println("No such node");
+        }
+    }
+
+    private static void printOneSideNeighboursList() {
+
+        System.out.println("Enter the name of a node");
+        String node = sc.nextLine();
+
+        try {
+            Set<GraphObj> ans = graph.returnOneSideNeighboursList(node);
+            if (ans.isEmpty()) {
+                System.out.println("No outgoing nodes");
+            } else {
+                System.out.println(ans);
+            }
+        } catch (NoSuchElementException e) {
+            System.out.println("No such node");
+        }
+
+    }
+
+    private static void printAllNeighboursList() {
+        System.out.println("Enter the name of a node");
+        String node = sc.nextLine();
+
+        try {
+            MutablePair<Set<GraphObj>, Set<GraphObj>> ans = graph.returnAllNeighboursList(node);
+            System.out.println("Outgoing: ");
+            System.out.println(ans.left);
+            System.out.println("Incoming: ");
+            System.out.println(ans.right);
+        } catch (NoSuchElementException e) {
             System.out.println("No such node");
         }
     }

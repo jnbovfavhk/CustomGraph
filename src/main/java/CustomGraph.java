@@ -150,15 +150,17 @@ public class CustomGraph {
     }
 
     // Для данной вершины орграфа вывести все «выходящие» соседние вершины
-    public void printOneSideNeighboursList(String node) {
+    public Set<GraphObj> returnOneSideNeighboursList(String node) {
         GraphObj graphObj = new GraphObj(node);
         if (adjacencyList.containsKey(graphObj)) {
-            System.out.println(adjacencyList.get(graphObj));
+//            System.out.println(adjacencyList.get(graphObj));
+            return adjacencyList.get(graphObj).keySet();
         }
+        throw new NoSuchElementException("No such node");
     }
 
     // Вывести те вершины орграфа, которые являются одновременно заходящими и выходящими для заданной вершины
-    public void printAllNeighboursList(String node) {
+    public MutablePair<Set<GraphObj>, Set<GraphObj>> returnAllNeighboursList(String node) {
         GraphObj graphObj = new GraphObj(node);
         if (adjacencyList.containsKey(graphObj)) {
             Set<GraphObj> oneSide = adjacencyList.get(graphObj).keySet();
@@ -170,17 +172,23 @@ public class CustomGraph {
                 }
             }
 
-            System.out.println("Выходящие: ");
-            System.out.println(oneSide);
-            System.out.println("Заходящие: ");
-            System.out.println(otherSide);
+//            System.out.println("Выходящие: ");
+//            System.out.println(oneSide);
+//            System.out.println("Заходящие: ");
+//            System.out.println(otherSide);
+
+            return new MutablePair<>(oneSide, otherSide);
         }
+
+        throw new NoSuchElementException("No such node");
     }
 
     // Построить граф, полученный однократным удалением рёбер, соединяющих вершины одинаковой степени
-    public int removeEdgesBetweenSameDegree() {
+    public CustomGraph removeEdgesBetweenSameDegree() {
         // Собираем рёбра для удаления
         HashMap<GraphObj, GraphObj> edgesToRemove = new HashMap<>();
+        // Конструктор-копия
+        CustomGraph graphCopy = new CustomGraph(this);
 
         for (Map.Entry<GraphObj, HashMap<GraphObj, Double>> entry : adjacencyList.entrySet()) {
             GraphObj from = entry.getKey();
@@ -190,7 +198,7 @@ public class CustomGraph {
 
                 int degreeFrom = adjacencyList.get(from).size();
                 int degreeTo = adjacencyList.get(to).size();
-                System.out.println(from + " " + degreeFrom + " " + to + " " + degreeTo);
+//                System.out.println(from + " " + degreeFrom + " " + to + " " + degreeTo);
 
                 // Если степени одинаковые - помечаем ребро для удаления
                 if (degreeFrom == degreeTo) {
@@ -201,10 +209,10 @@ public class CustomGraph {
         }
 
         for (Map.Entry<GraphObj, GraphObj> edge : edgesToRemove.entrySet()) {
-            System.out.println("Удаляем " + edge.getKey().toString() + " " + edge.getValue().toString());
-            removeEdge(edge.getKey().toString(), edge.getValue().toString());
+//            System.out.println("Удаляем " + edge.getKey().toString() + " " + edge.getValue().toString());
+            graphCopy.removeEdge(edge.getKey().toString(), edge.getValue().toString());
         }
 
-        return 0;
+        return graphCopy;
     }
 }
