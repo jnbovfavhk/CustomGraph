@@ -1,3 +1,4 @@
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 
 import java.io.File;
@@ -101,7 +102,7 @@ public class ConsoleInterface {
         type = "default";
 
         int ans = 0;
-        while (ans != 8) {
+        while (ans != 9) {
             System.out.println("Choose the option:");
             System.out.println("1 Add node");
             System.out.println("2 Add edge");
@@ -110,8 +111,9 @@ public class ConsoleInterface {
             System.out.println("5 Save to file");
             System.out.println("6 Print adjacency list");
             System.out.println("7 Print graph type");
-            System.out.println("8 Exit");
-            ans = takeValidNumber(1, 8);
+            System.out.println("8 Take new graph from this removing edges between nodes with same degree");
+            System.out.println("9 Exit");
+            ans = takeValidNumber(1, 9);
             switch (ans) {
                 case 1:
                     addNode();
@@ -133,6 +135,9 @@ public class ConsoleInterface {
                     break;
                 case 7:
                     printType();
+                    break;
+                case 8:
+                    removeEdgesBetweenSameDegree();
                     break;
             }
         }
@@ -184,6 +189,32 @@ public class ConsoleInterface {
         }
     }
 
+    private static void removeEdgesBetweenSameDegree() throws IOException {
+        System.out.println("What do you want to do with resulting graph?");
+        System.out.println("1 Replace my graph with it");
+        System.out.println("2 Save it to file");
+        int ans = 0;
+        ans = takeValidNumber(1, 2);
+        switch (ans) {
+            case 1:
+                graph = graph.removeEdgesBetweenSameDegree();
+                System.out.println("Succeed");
+                break;
+            case 2:
+                System.out.println("Enter the name of a file");
+                String fileName = sc.nextLine();
+                CustomGraph newGraph = graph.removeEdgesBetweenSameDegree();
+                newGraph.saveGraph(fileName + ".json");
+
+                FileWriter writer = new FileWriter(fileName + ".txt");
+                writer.write(type);
+                writer.close();
+
+                System.out.println("Succeed");
+                break;
+        }
+    }
+
     private static void addNode() {
         System.out.println("Enter the name of a node to add");
         String ans = sc.nextLine();
@@ -196,7 +227,7 @@ public class ConsoleInterface {
 
         type = "oriented";
         int ans = 0;
-        while (ans != 10) {
+        while (ans != 12) {
             System.out.println("Choose the option:");
             System.out.println("1 Add node");
             System.out.println("2 Add edge");
@@ -207,8 +238,10 @@ public class ConsoleInterface {
             System.out.println("7 Print graph type");
             System.out.println("8 Print outgoing nodes");
             System.out.println("9 Print outgoing and incoming nodes");
-            System.out.println("10 Exit");
-            ans = takeValidNumber(1, 10);
+            System.out.println("10 Topological sort");
+            System.out.println("11 Find shortest path length");
+            System.out.println("12 Exit");
+            ans = takeValidNumber(1, 12);
             switch (ans) {
                 case 1:
                     addNode();
@@ -236,6 +269,12 @@ public class ConsoleInterface {
                     break;
                 case 9:
                     printAllNeighboursList();
+                    break;
+                case 10:
+                    topologicalSort();
+                    break;
+                case 11:
+                    shortestPath();
                     break;
             }
         }
@@ -286,13 +325,37 @@ public class ConsoleInterface {
         String node = sc.nextLine();
 
         try {
-            MutablePair<Set<GraphObj>, Set<GraphObj>> ans = graph.returnAllNeighboursList(node);
-            System.out.println("Outgoing: ");
-            System.out.println(ans.left);
-            System.out.println("Incoming: ");
-            System.out.println(ans.right);
+            Set<GraphObj> ans = graph.returnFullNeighboursList(node);
+            System.out.println("Outgoing and incoming: ");
+            System.out.println(ans);
         } catch (NoSuchElementException e) {
             System.out.println("No such node");
+        }
+    }
+
+    private static void topologicalSort() {
+        try {
+            List<GraphObj> sorted = graph.topologicalSort();
+            System.out.println("Topological order:");
+            for (int i = 0; i < sorted.size(); i++) {
+                System.out.println((i+1) + ". " + sorted.get(i).getName());
+            }
+        } catch (IllegalStateException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private static void shortestPath() {
+        System.out.println("Enter start node:");
+        String u = sc.nextLine();
+        System.out.println("Enter end node:");
+        String v = sc.nextLine();
+
+        int length = graph.shortestPathLength(u, v);
+        if (length == -1) {
+            System.out.println("Path not found or vertices don't exist");
+        } else {
+            System.out.println("Shortest path length (number of edges): " + length);
         }
     }
 
@@ -302,7 +365,7 @@ public class ConsoleInterface {
         type = "weighted";
 
         int ans = 0;
-        while (ans != 8) {
+        while (ans != 9) {
             System.out.println("Choose the option:");
             System.out.println("1 Add node");
             System.out.println("2 Add edge");
@@ -311,8 +374,9 @@ public class ConsoleInterface {
             System.out.println("5 Save to file");
             System.out.println("6 Print adjacency list");
             System.out.println("7 Print graph type");
-            System.out.println("8 Exit");
-            ans = takeValidNumber(1, 8);
+            System.out.println("8 Find minimum spanning tree (Prim)");
+            System.out.println("9 Exit");
+            ans = takeValidNumber(1, 9);
             switch (ans) {
                 case 1:
                     addNode();
@@ -335,6 +399,9 @@ public class ConsoleInterface {
                 case 7:
                     printType();
                     break;
+                case 8:
+                    findMST();
+                    break;
             }
         }
     }
@@ -356,6 +423,34 @@ public class ConsoleInterface {
         int result = graph.addEdge(node1, node2, weight);
         if (result == -1) {
             System.out.println("No such node");
+        }
+    }
+
+    private static void findMST() throws IOException {
+        System.out.println("What do you want to do with the minimum spanning tree?");
+        System.out.println("1 Print it");
+        System.out.println("2 Save it to file");
+        int ans = takeValidNumber(1, 2);
+
+        CustomGraph mst = graph.primMST();
+
+        switch (ans) {
+            case 1:
+                System.out.println("Minimum Spanning Tree:");
+                printAdjList(mst);
+                break;
+            case 2:
+                System.out.println("Enter file name:");
+                String fileName = sc.nextLine();
+                mst.saveGraph(fileName + ".json");
+
+
+                FileWriter writer = new FileWriter(fileName + ".txt");
+                writer.write("weighted"); // MST - неориентированный взвешенный граф
+                writer.close();
+
+                System.out.println("MST saved to " + fileName + ".json");
+                break;
         }
     }
 
@@ -422,6 +517,10 @@ public class ConsoleInterface {
     }
 
     public static void printAdjList() {
+        printAdjList(graph);
+    }
+
+    public static void printAdjList(CustomGraph graph) {
         if (graph == null || graph.getNodeCount() == 0) {
             System.out.println("Graph is empty");
             return;

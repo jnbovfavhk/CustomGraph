@@ -12,6 +12,12 @@ public class GraphObj {
         this.name = name;
     }
 
+    // Конструктор копирования
+    public GraphObj(GraphObj other) {
+        this.name = other.name;
+        this.id = other.id;
+    }
+
     public Integer getId() {
         return id;
     }

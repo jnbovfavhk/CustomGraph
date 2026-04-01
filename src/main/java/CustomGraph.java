@@ -42,7 +42,21 @@ public class CustomGraph {
     }
 
     public HashMap<GraphObj, HashMap<GraphObj, Double>> getAdjacencyList() {
-        return adjacencyList;
+        HashMap<GraphObj, HashMap<GraphObj, Double>> copy = new HashMap<>();
+
+        for (Map.Entry<GraphObj, HashMap<GraphObj, Double>> entry : adjacencyList.entrySet()) {
+            GraphObj keyCopy = new GraphObj(entry.getKey().getName());
+            HashMap<GraphObj, Double> neighborsCopy = new HashMap<>();
+
+            for (Map.Entry<GraphObj, Double> neighborEntry : entry.getValue().entrySet()) {
+                GraphObj neighborCopy = new GraphObj(neighborEntry.getKey());
+                neighborsCopy.put(neighborCopy, neighborEntry.getValue());
+            }
+
+            copy.put(keyCopy, neighborsCopy);
+        }
+
+        return copy;
     }
 
     // Методы
@@ -160,7 +174,7 @@ public class CustomGraph {
     }
 
     // Вывести те вершины орграфа, которые являются одновременно заходящими и выходящими для заданной вершины
-    public MutablePair<Set<GraphObj>, Set<GraphObj>> returnAllNeighboursList(String node) {
+    public Set<GraphObj> returnFullNeighboursList(String node) {
         GraphObj graphObj = new GraphObj(node);
         if (adjacencyList.containsKey(graphObj)) {
             Set<GraphObj> oneSide = adjacencyList.get(graphObj).keySet();
@@ -176,8 +190,10 @@ public class CustomGraph {
 //            System.out.println(oneSide);
 //            System.out.println("Заходящие: ");
 //            System.out.println(otherSide);
+            Set<GraphObj> intersection = new HashSet<>(oneSide);; // копируем первое множество
+            intersection.retainAll(otherSide); // оставляем только элементы, которые есть в otherSide
 
-            return new MutablePair<>(oneSide, otherSide);
+            return intersection;
         }
 
         throw new NoSuchElementException("No such node");
@@ -215,4 +231,160 @@ public class CustomGraph {
 
         return graphCopy;
     }
+
+    public CustomGraph orientedToNonOriented() {
+        CustomGraph graphCopy = new CustomGraph(this);
+
+        for (GraphObj nodeFrom : graphCopy.getAdjacencyList().keySet()) {
+            for (GraphObj nodeTo : graphCopy.getAdjacencyList().get(nodeFrom).keySet()) {
+                if (!graphCopy.getAdjacencyList().get(nodeTo).containsKey(nodeFrom)) {
+                    graphCopy.getAdjacencyList().get(nodeTo).put(nodeFrom, graphCopy.getAdjacencyList().
+                            get(nodeFrom).get(nodeTo));
+                }
+            }
+        }
+
+        return graphCopy;
+    }
+
+    // Проверка на циклы (DFS)
+    private boolean hasCycle(GraphObj node, Set<GraphObj> visited, Set<GraphObj> stack) {
+        if (stack.contains(node)) return true;
+        if (visited.contains(node)) return false;
+
+        visited.add(node);
+        stack.add(node);
+
+        for (GraphObj neighbor : adjacencyList.getOrDefault(node, new HashMap<>()).keySet()) {
+            if (hasCycle(neighbor, visited, stack)) return true;
+        }
+
+        stack.remove(node);
+        return false;
+    }
+
+    // Топологическая сортировка
+    public List<GraphObj> topologicalSort() {
+        // Проверка на циклы из вспх вершин
+        Set<GraphObj> visited = new HashSet<>();
+        for (GraphObj node : adjacencyList.keySet()) {
+            if (hasCycle(node, visited, new HashSet<>())) {
+                throw new IllegalStateException("Graph has cycle, topologicalSort can not be executed");
+            }
+        }
+
+        // Сортировка (алгоритм Кана)
+        Map<GraphObj, Integer> inDegree = new HashMap<>();
+        for (GraphObj node : adjacencyList.keySet()) {
+            inDegree.putIfAbsent(node, 0);
+            for (GraphObj neighbor : adjacencyList.get(node).keySet()) {
+                inDegree.put(neighbor, inDegree.getOrDefault(neighbor, 0) + 1);
+            }
+        }
+
+        Queue<GraphObj> queue = new LinkedList<>();
+        for (Map.Entry<GraphObj, Integer> entry : inDegree.entrySet()) {
+            if (entry.getValue() == 0) queue.add(entry.getKey());
+        }
+
+        List<GraphObj> result = new ArrayList<>();
+        while (!queue.isEmpty()) {
+            GraphObj current = queue.poll();
+            result.add(current);
+
+            for (GraphObj neighbor : adjacencyList.getOrDefault(current, new HashMap<>()).keySet()) {
+                int degree = inDegree.get(neighbor) - 1;
+                inDegree.put(neighbor, degree);
+                if (degree == 0) queue.add(neighbor);
+            }
+        }
+
+        return result;
+    }
+
+    public int shortestPathLength(String u, String v) {
+        GraphObj start = new GraphObj(u);
+        GraphObj end = new GraphObj(v);
+
+        if (!adjacencyList.containsKey(start) || !adjacencyList.containsKey(end)) {
+            return -1;
+        }
+
+        // BFS
+        Queue<GraphObj> queue = new LinkedList<>();
+        Map<GraphObj, Integer> distance = new HashMap<>();
+
+        queue.add(start);
+        distance.put(start, 0);
+
+        while (!queue.isEmpty()) {
+            GraphObj current = queue.poll();
+            int currentDist = distance.get(current);
+
+            if (current.equals(end)) {
+                return currentDist;
+            }
+
+            for (GraphObj neighbor : adjacencyList.get(current).keySet()) {
+                if (!distance.containsKey(neighbor)) {
+                    distance.put(neighbor, currentDist + 1);
+                    queue.add(neighbor);
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    private static class Edge {
+        GraphObj from, to;
+        double weight;
+        Edge(GraphObj from, GraphObj to, double weight) {
+            this.from = from;
+            this.to = to;
+            this.weight = weight;
+        }
+    }
+
+    public CustomGraph primMST() {
+        if (adjacencyList.isEmpty()) return new CustomGraph();
+        // минимальное остовное дерево
+        CustomGraph mst = new CustomGraph();
+        // посещенные вершины
+        Set<GraphObj> visited = new HashSet<>();
+        // Очередь с приоритетом по весу(отсортированная) для ребер
+        PriorityQueue<Edge> pq = new PriorityQueue<>((a, b) -> Double.compare(a.weight, b.weight));
+
+        // Первую вершину добавляем в посещенные и в каркас
+        GraphObj start = adjacencyList.keySet().iterator().next();
+        visited.add(start);
+        mst.addNode(start.getName());
+
+        // Для первой вершины добавляем все ребра
+        for (Map.Entry<GraphObj, Double> e : adjacencyList.get(start).entrySet()) {
+            pq.add(new Edge(start, e.getKey(), e.getValue()));
+        }
+
+        while (!pq.isEmpty() && visited.size() < adjacencyList.size()) {
+            // Берем ребро с минимальным весом
+            Edge edge = pq.poll();
+
+            if (visited.contains(edge.to)) continue;
+
+            // Добавляем вершину в посещенные, а ребро и вершины в каркас
+            visited.add(edge.to);
+            mst.addNode(edge.to.getName());
+            mst.addEdge(edge.from.getName(), edge.to.getName(), edge.weight);
+
+            // добавляем все ребра из новой вершины
+            for (Map.Entry<GraphObj, Double> e : adjacencyList.get(edge.to).entrySet()) {
+                if (!visited.contains(e.getKey())) {
+                    pq.add(new Edge(edge.to, e.getKey(), e.getValue()));
+                }
+            }
+        }
+
+        return mst;
+    }
 }
+

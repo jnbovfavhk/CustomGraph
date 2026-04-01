@@ -24,6 +24,7 @@ public class Main {
         orientedGraph.addOrientedEdge("Санкт-Петербург", "Архангельск");
         orientedGraph.addOrientedEdge("Санкт-Петербург", "Новосибирск");
         orientedGraph.addOrientedEdge("Санкт-Петербург", "Саратов");
+        orientedGraph.addOrientedEdge("Саратов", "Санкт-Петербург");
         orientedGraph.addOrientedEdge("Саратов", "Астрахань");
         orientedGraph.addOrientedEdge("Архангельск", "Новосибирск");
         orientedGraph.addOrientedEdge("Тверь", "Тверь");
@@ -37,11 +38,9 @@ public class Main {
         Set<GraphObj> fromSP = newGraph.returnOneSideNeighboursList("Санкт-Петербург");
         System.out.println("Вершины, выходящие из Санкт-Перетрбурга:");
         System.out.println(fromSP);
-        MutablePair<Set<GraphObj>, Set<GraphObj>> twoSidesFromSP = newGraph.returnAllNeighboursList("Санкт-Петербург");
-        System.out.println("Выходящие: ");
-        System.out.println(twoSidesFromSP.left);
-        System.out.println("Заходящие: ");
-        System.out.println(twoSidesFromSP.right);
+        Set<GraphObj> twoSidesFromSP = newGraph.returnFullNeighboursList("Санкт-Петербург");
+        System.out.println("Выходящие и заходящие: ");
+        System.out.println(twoSidesFromSP);
 
 
         CustomGraph task4Graph = new CustomGraph();
