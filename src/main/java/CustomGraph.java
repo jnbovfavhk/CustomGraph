@@ -6,6 +6,8 @@ import java.util.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+
+import javax.print.attribute.standard.MediaSize;
 import java.lang.reflect.Type;
 
 public class CustomGraph {
@@ -348,43 +350,310 @@ public class CustomGraph {
 
     public CustomGraph primMST() {
         if (adjacencyList.isEmpty()) return new CustomGraph();
-        // минимальное остовное дерево
-        CustomGraph mst = new CustomGraph();
+
+        // минимальный остовной лес
+        CustomGraph mstForest = new CustomGraph();
         // посещенные вершины
         Set<GraphObj> visited = new HashSet<>();
-        // Очередь с приоритетом по весу(отсортированная) для ребер
-        PriorityQueue<Edge> pq = new PriorityQueue<>((a, b) -> Double.compare(a.weight, b.weight));
 
-        // Первую вершину добавляем в посещенные и в каркас
-        GraphObj start = adjacencyList.keySet().iterator().next();
-        visited.add(start);
-        mst.addNode(start.getName());
+        // Пока есть непосещенные вершины (для каждой компоненты связности)
+        while (visited.size() < adjacencyList.size()) {
+            // Находим стартовую вершину для текущей компоненты
+            GraphObj start = null;
+            for (GraphObj vertex : adjacencyList.keySet()) {
+                if (!visited.contains(vertex)) {
+                    start = vertex;
+                    break;
+                }
+            }
 
-        // Для первой вершины добавляем все ребра
-        for (Map.Entry<GraphObj, Double> e : adjacencyList.get(start).entrySet()) {
-            pq.add(new Edge(start, e.getKey(), e.getValue()));
+            if (start == null) break;
+
+            // Применяем алгоритм Прима для текущей компоненты
+            primForComponent(start, visited, mstForest);
         }
 
-        while (!pq.isEmpty() && visited.size() < adjacencyList.size()) {
-            // Берем ребро с минимальным весом
+        return mstForest;
+    }
+
+    private void primForComponent(GraphObj start, Set<GraphObj> visited, CustomGraph mstForest) {
+        // Очередь с приоритетом по весу для ребер
+        PriorityQueue<Edge> pq = new PriorityQueue<>((a, b) -> Double.compare(a.weight, b.weight));
+
+        // Добавляем стартовую вершину в посещенные и в лес
+        visited.add(start);
+        mstForest.addNode(start.getName());
+
+        // Для стартовой вершины добавляем все ребра
+        for (Map.Entry<GraphObj, Double> e : adjacencyList.get(start).entrySet()) {
+            if (!visited.contains(e.getKey())) {
+                pq.add(new Edge(start, e.getKey(), e.getValue()));
+            }
+        }
+
+        // Алгоритм Прима для текущей компоненты
+        while (!pq.isEmpty()) {
             Edge edge = pq.poll();
 
             if (visited.contains(edge.to)) continue;
 
-            // Добавляем вершину в посещенные, а ребро и вершины в каркас
+            // Добавляем вершину в посещенные, а ребро и вершины в лес
             visited.add(edge.to);
-            mst.addNode(edge.to.getName());
-            mst.addEdge(edge.from.getName(), edge.to.getName(), edge.weight);
+            mstForest.addNode(edge.to.getName());
+            mstForest.addEdge(edge.from.getName(), edge.to.getName(), edge.weight);
 
-            // добавляем все ребра из новой вершины
+            // Добавляем все ребра из новой вершины
             for (Map.Entry<GraphObj, Double> e : adjacencyList.get(edge.to).entrySet()) {
                 if (!visited.contains(e.getKey())) {
                     pq.add(new Edge(edge.to, e.getKey(), e.getValue()));
                 }
             }
         }
+    }
 
-        return mst;
+    // Вспомогательный класс
+    private static class Node implements Comparable<Node> {
+        GraphObj v;
+        double d;
+        Node(GraphObj v, double d) { this.v = v; this.d = d; }
+        public int compareTo(Node o) { return Double.compare(this.d, o.d); }
+    }
+
+    // Алгоритм Дейкстры
+    private HashMap<GraphObj, Double> dijkstra(GraphObj start_node) {
+        HashMap<GraphObj, Double> dist = new HashMap<>();
+        for (GraphObj v : adjacencyList.keySet()) {
+            dist.put(v, Double.POSITIVE_INFINITY);
+        }
+
+        dist.put(start_node, 0.0);
+
+        PriorityQueue<Node> pq = new PriorityQueue<>();
+        pq.add(new Node(start_node, 0.0));
+
+        while (!pq.isEmpty()) {
+            Node cur = pq.poll();
+            if (cur.d > dist.get(cur.v)) continue;
+            for (var e : adjacencyList.get(cur.v).entrySet()) {
+                double new_distance = cur.d + e.getValue();
+                if (new_distance < dist.get(e.getKey())) {
+                    dist.put(e.getKey(), new_distance);
+                    pq.add(new Node(e.getKey(), new_distance));
+                }
+            }
+        }
+        return dist;
+    }
+
+    // Определить, есть ли в графе вершина, минимальные стоимости путей от которой до остальных в сумме не превосходят P
+    public GraphObj nodeThatSumOfMinimumPathsLessThan(double p) {
+        for (GraphObj v : getAdjacencyList().keySet()) {
+            HashMap<GraphObj, Double> dist = dijkstra(v);
+
+            double sum = 0;
+            boolean ok = true;
+            for (var e : dist.entrySet()) {
+                if (e.getValue() == Double.POSITIVE_INFINITY) { ok = false; break; }
+                if (!e.getKey().equals(v)) sum += e.getValue();
+            }
+            if (ok && sum <= p) return v;
+        }
+        return null;
+    }
+
+    private int edgesCount() {
+        int count = 0;
+        for (GraphObj node : adjacencyList.keySet()) {
+            count += adjacencyList.get(node).size();
+        }
+
+        return count;
+    }
+
+    private HashMap<GraphObj, Double> bellmanFord(GraphObj givenNode) {
+        HashMap<GraphObj, Double> dist = new HashMap<>();
+        for (GraphObj v : adjacencyList.keySet()) {
+            if (!v.equals(givenNode)) {
+                dist.put(v, Double.POSITIVE_INFINITY);
+            }
+            else {
+                dist.put(v, (double) 0);
+            }
+        }
+
+        HashMap<GraphObj, GraphObj> parents = new HashMap<>();
+        for (GraphObj v : adjacencyList.keySet()) {
+            parents.put(v, null);
+        }
+
+        int edgesCount = edgesCount();
+        for (int i = 0; i < edgesCount - 1; i++) {
+            boolean updated = false;
+
+            for (var entry : adjacencyList.entrySet()) {
+                GraphObj from = entry.getKey();
+                HashMap<GraphObj, Double> edges = entry.getValue();
+
+                for (var edge : edges.entrySet()) {
+                    GraphObj to = edge.getKey();
+                    Double weight = edge.getValue();
+
+                    // Релаксация
+                    if (dist.get(from) != Double.POSITIVE_INFINITY &&
+                            dist.get(from) + weight < dist.get(to)) {
+
+                        dist.put(to, dist.get(from) + weight);
+                        parents.put(to, from);
+                        updated = true;
+                    }
+                }
+            }
+            // Если за итерацию не было обновлений, то выходим
+            if (!updated) {
+                break;
+            }
+
+            // Проверка на отрицательные циклы
+            for (var entry : adjacencyList.entrySet()) {
+                GraphObj from = entry.getKey();
+                HashMap<GraphObj, Double> edges = entry.getValue();
+
+                for (var edge : edges.entrySet()) {
+                    GraphObj to = edge.getKey();
+                    Double weight = edge.getValue();
+
+                    if (dist.get(from) != Double.POSITIVE_INFINITY &&
+                            dist.get(from) + weight < dist.get(to)) {
+
+                        throw new RuntimeException("Граф содержит отрицательный цикл");
+                    }
+                }
+            }
+
+        }
+        return dist;
+
+    }
+
+    public Set<GraphObj> allNodesWithDistanceToNodeLessThanN(String givenNodeName, double n) {
+        GraphObj givenNode = new GraphObj(givenNodeName);
+        if (!adjacencyList.containsKey(givenNode)) {
+            throw new NoSuchElementException("No such node: " + givenNodeName);
+        }
+
+        HashMap<GraphObj, Double> distances = bellmanFord(givenNode);
+        Set<GraphObj> answerSet = new HashSet<>();
+
+        for (var node : distances.entrySet()) {
+            if (node.getValue() < n) {
+                answerSet.add(node.getKey());
+            }
+        }
+
+        return answerSet;
+    }
+
+    // Алгоритм Флойда для нахождения кратчайших путей между всеми парами вершин
+    public HashMap<GraphObj, HashMap<GraphObj, Double>> floyd() {
+
+        List<GraphObj> nodes = new ArrayList<>(adjacencyList.keySet());
+        int n = nodes.size();
+
+        // матрица расстояний
+        HashMap<GraphObj, HashMap<GraphObj, Double>> dist = new HashMap<>();
+
+        // Заполняем матрицу начальными значениями
+        for (GraphObj node : nodes) {
+            HashMap<GraphObj, Double> distances = new HashMap<>();
+            distances.put(node, 0.0);
+            dist.put(node, distances);
+        }
+
+        // Заполняем известные расстояния из списка смежности
+        for (Map.Entry<GraphObj, HashMap<GraphObj, Double>> entry : adjacencyList.entrySet()) {
+            GraphObj from = entry.getKey();
+
+            for (Map.Entry<GraphObj, Double> edge : entry.getValue().entrySet()) {
+                GraphObj to = edge.getKey();
+                double weight = edge.getValue();
+
+                // Если есть несколько ребер между вершинами, берем минимальный вес
+                HashMap<GraphObj, Double> fromDistances = dist.get(from);
+                if (!fromDistances.containsKey(to) || weight < fromDistances.get(to)) {
+                    fromDistances.put(to, weight);
+                }
+            }
+        }
+
+        // Основной цикл алгоритма
+        for (int k = 0; k < n; k++) {
+            GraphObj intermediateNode = nodes.get(k);
+
+            for (int i = 0; i < n; i++) {
+                GraphObj fromNode = nodes.get(i);
+
+                // Получаем расстояние от fromNode до intermediateNode
+                Double distToIntermediate = dist.get(fromNode).get(intermediateNode);
+                if (distToIntermediate == null || distToIntermediate == Double.POSITIVE_INFINITY) {
+                    continue;
+                }
+
+                for (int j = 0; j < n; j++) {
+                    GraphObj toNode = nodes.get(j);
+
+                    // Получаем расстояние от intermediateNode до toNode
+                    Double distFromIntermediate = dist.get(intermediateNode).get(toNode);
+                    if (distFromIntermediate == null || distFromIntermediate == Double.POSITIVE_INFINITY) {
+                        continue;
+                    }
+
+                    double newDistance = distToIntermediate + distFromIntermediate;
+                    Double currentDistance = dist.get(fromNode).get(toNode);
+
+                    if (currentDistance == null || newDistance < currentDistance) {
+                        dist.get(fromNode).put(toNode, newDistance);
+                    }
+                }
+            }
+        }
+
+        // Проверка на отрицательные циклы
+        for (GraphObj node : nodes) {
+            Double distToSelf = dist.get(node).get(node);
+            if (distToSelf != null && distToSelf < 0) {
+                throw new RuntimeException("Graph has a negative cycle");
+            }
+        }
+
+        return dist;
+    }
+
+
+    // Определить, есть ли в графе вершина, каждая из минимальных стоимостей пути от которой до остальных не превосходит N
+    public Set<GraphObj> nodesThatEveryMinPathLessThanN(int N) {
+        if (N <= 0) {
+            throw new NoSuchElementException("N must be a positive value");
+        }
+
+        Set<GraphObj> answerNodes = new HashSet<>();
+
+        HashMap<GraphObj, HashMap<GraphObj, Double>> distances = floyd();
+        boolean add = true;
+        for (var entry : distances.entrySet()) {
+            add = true;
+            for (var distance : entry.getValue().entrySet()) {
+                if (distance.getValue() > N) {
+                    add = false;
+                    break;
+                }
+            }
+
+            if (add) {
+                answerNodes.add(entry.getKey());
+            }
+        }
+
+        return answerNodes;
     }
 }
 

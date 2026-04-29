@@ -102,7 +102,7 @@ public class ConsoleInterface {
         type = "default";
 
         int ans = 0;
-        while (ans != 9) {
+        while (ans != 10) {
             System.out.println("Choose the option:");
             System.out.println("1 Add node");
             System.out.println("2 Add edge");
@@ -112,8 +112,9 @@ public class ConsoleInterface {
             System.out.println("6 Print adjacency list");
             System.out.println("7 Print graph type");
             System.out.println("8 Take new graph from this removing edges between nodes with same degree");
-            System.out.println("9 Exit");
-            ans = takeValidNumber(1, 9);
+            System.out.println("9 Find shortest path length");
+            System.out.println("10 Exit");
+            ans = takeValidNumber(1, 10);
             switch (ans) {
                 case 1:
                     addNode();
@@ -138,6 +139,9 @@ public class ConsoleInterface {
                     break;
                 case 8:
                     removeEdgesBetweenSameDegree();
+                    break;
+                case 9:
+                    shortestPath();
                     break;
             }
         }
@@ -365,7 +369,7 @@ public class ConsoleInterface {
         type = "weighted";
 
         int ans = 0;
-        while (ans != 9) {
+        while (ans != 10) {
             System.out.println("Choose the option:");
             System.out.println("1 Add node");
             System.out.println("2 Add edge");
@@ -375,8 +379,9 @@ public class ConsoleInterface {
             System.out.println("6 Print adjacency list");
             System.out.println("7 Print graph type");
             System.out.println("8 Find minimum spanning tree (Prim)");
-            System.out.println("9 Exit");
-            ans = takeValidNumber(1, 9);
+            System.out.println("9 Find node that the sum of minimum paths to other nodes is less than...");
+            System.out.println("10 Exit");
+            ans = takeValidNumber(1, 10);
             switch (ans) {
                 case 1:
                     addNode();
@@ -401,6 +406,9 @@ public class ConsoleInterface {
                     break;
                 case 8:
                     findMST();
+                    break;
+                case 9:
+                    nodeThatSumOfMinimumPathsLessThan();
                     break;
             }
         }
@@ -454,12 +462,24 @@ public class ConsoleInterface {
         }
     }
 
+    private static void nodeThatSumOfMinimumPathsLessThan() {
+        System.out.println("Enter value:");
+        Double value = Double.parseDouble(sc.nextLine());
+
+        GraphObj node = graph.nodeThatSumOfMinimumPathsLessThan(value);
+        if (node == null) {
+            System.out.println("No such node");
+        } else {
+            System.out.println(node);
+        }
+    }
+
     private static void orientedWeightedGraph() throws IOException {
 
         type = "orientedWeighted";
 
         int ans = 0;
-        while (ans != 8) {
+        while (ans != 10) {
             System.out.println("Choose the option:");
             System.out.println("1 Add node");
             System.out.println("2 Add edge");
@@ -468,8 +488,10 @@ public class ConsoleInterface {
             System.out.println("5 Save to file");
             System.out.println("6 Print adjacency list");
             System.out.println("7 Print graph type");
-            System.out.println("8 Exit");
-            ans = takeValidNumber(1, 8);
+            System.out.println("8 Print All Nodes With Distance To Given Node Less Than N");
+            System.out.println("9 Print Nodes That Every Min Path Less Than N");
+            System.out.println("10 Exit");
+            ans = takeValidNumber(1, 10);
             switch (ans) {
                 case 1:
                     addNode();
@@ -491,6 +513,12 @@ public class ConsoleInterface {
                     break;
                 case 7:
                     printType();
+                    break;
+                case 8:
+                    allNodesWithDistanceToNodeLessThanN();
+                    break;
+                case 9:
+                    nodesThatEveryMinPathLessThanN();
                     break;
             }
         }
@@ -514,6 +542,51 @@ public class ConsoleInterface {
         if (result == -1) {
             System.out.println("No such node");
         }
+    }
+
+    public static void allNodesWithDistanceToNodeLessThanN() {
+        System.out.println("Enter a node");
+        String node = sc.nextLine();
+        System.out.println("Enter N");
+        int n;
+        if (sc.hasNextInt()) {
+            n = Integer.parseInt(sc.nextLine());
+        }
+        else {
+            System.out.println("Not a number");
+            return;
+        }
+
+        try {
+            var resultSet = graph.allNodesWithDistanceToNodeLessThanN(node, n);
+            for (GraphObj x : resultSet) {
+                System.out.printf("%s, ", x);
+            }
+            System.out.println();
+        } catch (NoSuchElementException e) {
+            System.out.println("No such node");
+            return;
+        }
+    }
+
+    public static void nodesThatEveryMinPathLessThanN() {
+        System.out.println("Print N");
+        int n;
+        if (sc.hasNextInt()) {
+            n = Integer.parseInt(sc.nextLine());
+        }
+        else {
+            System.out.println("Not a number");
+            return;
+        }
+
+        var result = graph.nodesThatEveryMinPathLessThanN(n);
+
+        for (GraphObj x : result) {
+            System.out.printf("%s, ", x);
+        }
+        System.out.println();
+
     }
 
     public static void printAdjList() {
