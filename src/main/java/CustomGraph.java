@@ -470,9 +470,37 @@ public class CustomGraph {
         return count;
     }
 
+    private HashMap<GraphObj, HashMap<GraphObj, Double>> invertAdjacencyList() {
+        HashMap<GraphObj, HashMap<GraphObj, Double>> inverted = new HashMap<>();
+
+        // Инициализируем все вершины в новом списке
+        for (GraphObj node : adjacencyList.keySet()) {
+            inverted.put(node, new HashMap<>());
+        }
+
+        // Для каждого ребра from -> to с весом weight
+        // добавляем ребро to -> from с тем же весом
+        for (Map.Entry<GraphObj, HashMap<GraphObj, Double>> entry : adjacencyList.entrySet()) {
+            GraphObj from = entry.getKey();
+
+            for (Map.Entry<GraphObj, Double> edge : entry.getValue().entrySet()) {
+                GraphObj to = edge.getKey();
+                Double weight = edge.getValue();
+
+                // Инвертируем направление: to -> from
+                inverted.get(to).put(from, weight);
+            }
+        }
+
+        return inverted;
+    }
+
     private HashMap<GraphObj, Double> bellmanFord(GraphObj givenNode) {
+        // Инвертирую список смежности чтобы искать минимальные расстояния к вершине а не от неё
+        var inverseAdjacencyList = invertAdjacencyList();
+
         HashMap<GraphObj, Double> dist = new HashMap<>();
-        for (GraphObj v : adjacencyList.keySet()) {
+        for (GraphObj v : inverseAdjacencyList.keySet()) {
             if (!v.equals(givenNode)) {
                 dist.put(v, Double.POSITIVE_INFINITY);
             }
@@ -482,7 +510,7 @@ public class CustomGraph {
         }
 
         HashMap<GraphObj, GraphObj> parents = new HashMap<>();
-        for (GraphObj v : adjacencyList.keySet()) {
+        for (GraphObj v : inverseAdjacencyList.keySet()) {
             parents.put(v, null);
         }
 
@@ -490,7 +518,7 @@ public class CustomGraph {
         for (int i = 0; i < edgesCount - 1; i++) {
             boolean updated = false;
 
-            for (var entry : adjacencyList.entrySet()) {
+            for (var entry : inverseAdjacencyList.entrySet()) {
                 GraphObj from = entry.getKey();
                 HashMap<GraphObj, Double> edges = entry.getValue();
 
@@ -513,22 +541,6 @@ public class CustomGraph {
                 break;
             }
 
-            // Проверка на отрицательные циклы
-            for (var entry : adjacencyList.entrySet()) {
-                GraphObj from = entry.getKey();
-                HashMap<GraphObj, Double> edges = entry.getValue();
-
-                for (var edge : edges.entrySet()) {
-                    GraphObj to = edge.getKey();
-                    Double weight = edge.getValue();
-
-                    if (dist.get(from) != Double.POSITIVE_INFINITY &&
-                            dist.get(from) + weight < dist.get(to)) {
-
-                        throw new RuntimeException("Граф содержит отрицательный цикл");
-                    }
-                }
-            }
 
         }
         return dist;
@@ -617,11 +629,40 @@ public class CustomGraph {
             }
         }
 
+
         // Проверка на отрицательные циклы
         for (GraphObj node : nodes) {
             Double distToSelf = dist.get(node).get(node);
             if (distToSelf != null && distToSelf < 0) {
-                throw new RuntimeException("Graph has a negative cycle");
+                var resultDist = editEndFloydMatrix(dist);
+                System.out.println(resultDist);
+                return resultDist;
+            }
+        }
+        System.out.println(dist);
+        return dist;
+    }
+
+    private HashMap<GraphObj, HashMap<GraphObj, Double>> editEndFloydMatrix(HashMap<GraphObj, HashMap<GraphObj, Double>> dist) {
+        int n = dist.size();
+        for (GraphObj k : dist.keySet()) {
+            Double kDistToSelf = dist.get(k).get(k);
+            // если в промежуточной вершине на главной диагонали матрицы отрицательное число
+            if (kDistToSelf != null && kDistToSelf < 0) {
+                for (GraphObj from : dist.keySet()) {
+                    // если есть путь от from до k
+                    Double fromToKDist = dist.get(from).get(k);
+                    if (fromToKDist != null) {
+                        for (GraphObj to : dist.keySet()) {
+                            // если есть путь от k до to
+                            Double kToToDist = dist.get(k).get(to);
+                            if (kToToDist != null) {
+                                // то мин путь из from в to заменяем на минус бесконечность
+                                dist.get(from).put(to, Double.NEGATIVE_INFINITY);
+                            }
+                        }
+                    }
+                }
             }
         }
 
