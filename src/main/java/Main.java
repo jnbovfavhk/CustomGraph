@@ -7,7 +7,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
         try {
             CustomGraph graph = new CustomGraph(); // граф
-            GraphServer server = new GraphServer(graph);
+            GraphServer server = new GraphServer();
             server.startServer(8888); // порт любой, например 8888
             System.out.println("Server started on port 8888");
         } catch (IOException e) {

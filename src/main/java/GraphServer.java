@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import java.util.Scanner;
 
 class GraphServer {
     private CustomGraph graph; // ваш класс графа
@@ -33,11 +34,25 @@ class GraphServer {
     }
 
     public GraphServer() {
-        this.graph = new CustomGraph();
+
     }
 
-    public GraphServer(CustomGraph graph) {
-        this.graph = graph;
+    public void initGraph(String graphType) {
+        this.graph = new CustomGraph();
+        this.graphType = graphType;
+    }
+
+    public void initGraphFromFile(String fileName) {
+        try {
+            graph = new CustomGraph(fileName + ".json");
+
+            Scanner scanner = new Scanner(new File(fileName + ".txt"));
+            this.graphType = scanner.nextLine();
+            scanner.close();
+
+        } catch (IOException e) {
+            System.out.printf("No such file: %s\n", fileName);
+        }
     }
 
 
@@ -50,22 +65,33 @@ class GraphServer {
         }
 
         String cmdType = parts[0];
-        String data = parts[1];  // дополнительные данные типа имён вершин, весов и тд
+        String data = parts[1];  // дополнительные данные типа имён вершин, весов, файлов и тд
 
         switch (cmdType) {
-            case "ADD_NODE":
-                String nodeName = data;  // имя из TouchDesigner
-                graph.addNode(nodeName);
-                return "OK: Node " + nodeName + " added";
-            case "SAVE":
-                String fileName = data;
-                graph.saveGraph(fileName + ".json");
+            case "INIT_GRAPH":
+                initGraph(data);
+                return "OK: Graph with type '" + data + "' initialized";
 
-                FileWriter writer = new FileWriter(fileName + ".txt");
+            case "INIT_GRAPH_FROM_FILE":
+                initGraph(data);
+                return "OK: Graph from file '" + data + "' initialized";
+
+            case "ADD_NODE":
+                // имя из TouchDesigner
+                graph.addNode(data);
+                return "OK: Node " + data + " added";
+
+            case "SAVE":
+                graph.saveGraph(data + ".json");
+
+                FileWriter writer = new FileWriter(data + ".txt");
                 writer.write(graphType);
                 writer.close();
 
-                return "OK: Graph saved to file " + fileName;
+                return "OK: Graph saved to file " + data;
+
+            case "ADD_EDGE":
+
             default:
                 return "ERROR: Unknown command";
         }
