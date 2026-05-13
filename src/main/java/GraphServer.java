@@ -76,11 +76,6 @@ class GraphServer {
                 initGraph(data);
                 return "OK: Graph from file '" + data + "' initialized";
 
-            case "ADD_NODE":
-                // имя из TouchDesigner
-                graph.addNode(data);
-                return "OK: Node " + data + " added";
-
             case "SAVE":
                 graph.saveGraph(data + ".json");
 
@@ -90,10 +85,59 @@ class GraphServer {
 
                 return "OK: Graph saved to file " + data;
 
+            case "ADD_NODE":
+                // имя из TouchDesigner
+                graph.addNode(data);
+                return "OK: Node " + data + " added";
+
             case "ADD_EDGE":
+                String nodeFrom = data.split(",")[0];
+                String nodeTo = data.split(",")[1];
+                switch (this.graphType) {
+                    case "default":
+                        this.graph.addEdge(nodeFrom, nodeTo);
+
+                        return "OK: Added edge from '" + nodeFrom + "' to '" + nodeTo + "'";
+                    case "oriented":
+                        this.graph.addOrientedEdge(nodeFrom, nodeTo);
+
+                        return "OK: Added edge from '" + nodeFrom + "' to '" + nodeTo + "'";
+                    case "weighted":
+                        this.graph.addEdge(nodeFrom, nodeTo, Double.parseDouble(data.split(",")[2]));
+
+                        return "OK: Added edge from '" + nodeFrom + "' to '" + nodeTo + "' with weight " + data.split(",")[2];
+
+                    case "orientedWeighted":
+                        this.graph.addOrientedEdge(nodeFrom, nodeTo, Double.parseDouble(data.split(",")[2]));
+
+                        return "OK: Added edge from '" + nodeFrom + "' to '" + nodeTo + "' with weight " + data.split(",")[2];
+                    default:
+                        return "ERROR: Unknown command: " + command;
+                }
+
+            case "DELETE_NODE":
+                this.graph.removeNode(data);
+                return "OK: Node '" + data + "' deleted";
+
+            case "DELETE_EDGE":
+                switch (this.graphType) {
+                    case "default", "weighted":
+                        this.graph.removeEdge(data.split(",")[0], data.split(",")[1]);
+
+                        return "OK: Edge between '" + data.split(",")[0] + "' and '" + data.split(",")[0] + "' removed";
+                    case "oriented", "orientedWeighted":
+                        this.graph.removeOrientedEdge(data.split(",")[0], data.split(",")[1]);
+
+                        return "OK: Edge between '" + data.split(",")[0] + "' and '" + data.split(",")[0] + "' removed";
+
+                        default:
+                        return "ERROR: Unknown command: " + command;
+                }
+
+
 
             default:
-                return "ERROR: Unknown command";
+                return "ERROR: Unknown command: " + command;
         }
     }
 }

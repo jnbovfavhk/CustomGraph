@@ -696,5 +696,58 @@ public class CustomGraph {
 
         return answerNodes;
     }
+
+    // Алгоритм Эдмондса-Карпа для поиска максимального потока (игнорирует отрицательные ребра)
+    public double maxFlow(String source, String sink) {
+        GraphObj s = new GraphObj(source), t = new GraphObj(sink);
+        if (!adjacencyList.containsKey(s) || !adjacencyList.containsKey(t)) return -1;
+
+        // Остаточная сеть
+        HashMap<GraphObj, HashMap<GraphObj, Double>> r = new HashMap<>();
+        for (var e : adjacencyList.entrySet()) {
+            r.put(e.getKey(), new HashMap<>(e.getValue()));
+        }
+
+        double flow = 0;
+        // Ищем кратчайший путь
+        while (true) {
+            // BFS
+            HashMap<GraphObj, GraphObj> parent = new HashMap<>();
+            Queue<GraphObj> q = new LinkedList<>();
+            q.add(s);
+            parent.put(s, null);
+
+            boolean found = false;
+            while (!q.isEmpty() && !found) {
+                GraphObj u = q.poll();
+                for (var v : r.get(u).entrySet()) {
+                    if (v.getValue() > 0 && !parent.containsKey(v.getKey())) {
+                        parent.put(v.getKey(), u);
+                        q.add(v.getKey());
+                        if (v.getKey().equals(t)) { found = true; break; }
+                    }
+                }
+            }
+
+            if (!found) break;
+
+            // Ищем узкое место
+            double minCap = Double.POSITIVE_INFINITY;
+            for (GraphObj v = t; parent.get(v) != null; v = parent.get(v)) {
+                GraphObj u = parent.get(v);
+                minCap = Math.min(minCap, r.get(u).get(v));
+            }
+
+            // Обновление - уменьшаем веса дуг, по которым прошлись, но увеличиваем веса обратных дуг(или создаем их)
+            for (GraphObj v = t; parent.get(v) != null; v = parent.get(v)) {
+                GraphObj u = parent.get(v);
+                r.get(u).put(v, r.get(u).get(v) - minCap);
+                r.get(v).put(u, r.get(v).getOrDefault(u, 0.0) + minCap);
+            }
+
+            flow += minCap;
+        }
+        return flow;
+    }
 }
 

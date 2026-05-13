@@ -479,7 +479,7 @@ public class ConsoleInterface {
         type = "orientedWeighted";
 
         int ans = 0;
-        while (ans != 10) {
+        while (ans != 11) {
             System.out.println("Choose the option:");
             System.out.println("1 Add node");
             System.out.println("2 Add edge");
@@ -490,8 +490,9 @@ public class ConsoleInterface {
             System.out.println("7 Print graph type");
             System.out.println("8 Print All Nodes With Distance To Given Node Less Than N");
             System.out.println("9 Print Nodes That Every Min Path Less Than N");
-            System.out.println("10 Exit");
-            ans = takeValidNumber(1, 10);
+            System.out.println("10 Print max flow between 2 nodes");
+            System.out.println("11 Exit");
+            ans = takeValidNumber(1, 11);
             switch (ans) {
                 case 1:
                     addNode();
@@ -519,6 +520,9 @@ public class ConsoleInterface {
                     break;
                 case 9:
                     nodesThatEveryMinPathLessThanN();
+                    break;
+                case 10:
+                    maxFlow();
                     break;
             }
         }
@@ -615,6 +619,16 @@ public class ConsoleInterface {
                 System.out.println(String.join(", ", neighbors));
             }
         }
+    }
+
+    public static void maxFlow() {
+        System.out.println("Enter a 'from' node");
+        String s = sc.nextLine();
+
+        System.out.println("Enter an 'exit' node");
+        String t = sc.nextLine();
+
+        System.out.println(graph.maxFlow(s, t));
     }
 
     public static void printType() {
