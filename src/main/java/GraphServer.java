@@ -3,6 +3,7 @@ import java.net.*;
 
 class GraphServer {
     private CustomGraph graph; // ваш класс графа
+    private String graphType;
     private ServerSocket serverSocket;
 
     public void startServer(int port) throws IOException {
@@ -40,7 +41,7 @@ class GraphServer {
     }
 
 
-    private String handleCommand(String command) {
+    private String handleCommand(String command) throws IOException {
         // Разделяем команду и данные
         String[] parts = command.split(":", 2);
 
@@ -52,11 +53,19 @@ class GraphServer {
         String data = parts[1];  // дополнительные данные типа имён вершин, весов и тд
 
         switch (cmdType) {
-            case "ADD_VERTEX":
+            case "ADD_NODE":
                 String nodeName = data;  // имя из TouchDesigner
                 graph.addNode(nodeName);
-                return "OK: Vertex " + nodeName + " added";
+                return "OK: Node " + nodeName + " added";
+            case "SAVE":
+                String fileName = data;
+                graph.saveGraph(fileName + ".json");
 
+                FileWriter writer = new FileWriter(fileName + ".txt");
+                writer.write(graphType);
+                writer.close();
+
+                return "OK: Graph saved to file " + fileName;
             default:
                 return "ERROR: Unknown command";
         }
