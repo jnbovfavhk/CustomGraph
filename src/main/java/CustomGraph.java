@@ -709,6 +709,7 @@ public class CustomGraph {
         }
 
         double flow = 0;
+        int iter = 1;
         // Ищем кратчайший путь
         while (true) {
             // BFS
@@ -737,6 +738,16 @@ public class CustomGraph {
                 GraphObj u = parent.get(v);
                 minCap = Math.min(minCap, r.get(u).get(v));
             }
+
+            // Печатание пути
+            List<String> path = new ArrayList<>();
+            for (GraphObj v = t; v != null; v = parent.get(v)) {
+                path.add(v.getName());
+            }
+            Collections.reverse(path);
+            System.out.println("Путь " + iter + ": " + String.join(" → ", path) + " (поток: " + minCap + ")");
+            iter++;
+
 
             // Обновление - уменьшаем веса дуг, по которым прошлись, но увеличиваем веса обратных дуг(или создаем их)
             for (GraphObj v = t; parent.get(v) != null; v = parent.get(v)) {

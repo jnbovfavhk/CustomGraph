@@ -9,20 +9,47 @@ class GraphServer {
 
     public void startServer(int port) throws IOException {
         serverSocket = new ServerSocket(port);
+        System.out.println("=== СЕРВЕР ЗАПУЩЕН НА ПОРТУ " + port + " ===");
+        System.out.println("Ожидание подключений...");
+
         new Thread(() -> {
             while(true) {
-                try (Socket socket = serverSocket.accept();
-                     BufferedReader in = new BufferedReader(
-                             new InputStreamReader(socket.getInputStream()));
-                     PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
+                try {
+                    Socket socket = serverSocket.accept();
+                    System.out.println("!!! КЛИЕНТ ПОДКЛЮЧИЛСЯ !!!");
+                    System.out.println("Адрес клиента: " + socket.getRemoteSocketAddress());
 
-                    String command = in.readLine();
-                    if (command == null) {
-                        return;
+                    try (BufferedReader in = new BufferedReader(
+                            new InputStreamReader(socket.getInputStream()));
+                         PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
+
+                        // Читаем ВСЕ строки, которые приходят
+                        String command;
+                        while ((command = in.readLine()) != null) {
+                            System.out.println(">>> [ДИАГНОСТИКА] Получено: '" + command + "'");
+
+                            // Если это пустая строка - пропускаем
+                            if (command.trim().isEmpty()) {
+                                System.out.println(">>> [ДИАГНОСТИКА] Пустая строка, пропускаем");
+                                continue;
+                            }
+
+                            // Обрабатываем команду
+                            String response = handleCommand(command);
+                            System.out.println("<<< [ДИАГНОСТИКА] Ответ: '" + response + "'");
+                            out.println(response);
+
+                            // Если команда была ADD_NODE или другая основная - продолжаем слушать
+                            // Не закрываем соединение после одной команды
+                        }
+                    } catch (IOException e) {
+                        System.out.println("Ошибка при обработке клиента: " + e.getMessage());
+                        e.printStackTrace();
                     }
-                    String response = handleCommand(command);
-                    out.println(response);
-                } catch (IOException e) { e.printStackTrace(); }
+                } catch (IOException e) {
+                    System.out.println("Ошибка при принятии подключения: " + e.getMessage());
+                    e.printStackTrace();
+                }
             }
         }).start();
     }
@@ -34,7 +61,7 @@ class GraphServer {
     }
 
     public GraphServer() {
-
+        this.graph = new CustomGraph();
     }
 
     public void initGraph(String graphType) {
@@ -57,6 +84,7 @@ class GraphServer {
 
 
     private String handleCommand(String command) throws IOException {
+        System.out.println("=== ПОЛУЧЕНО: [" + command + "] ===");
         // Разделяем команду и данные
         String[] parts = command.split(":", 2);
 
@@ -88,6 +116,7 @@ class GraphServer {
             case "ADD_NODE":
                 // имя из TouchDesigner
                 graph.addNode(data);
+                System.out.println("Node " + data + " added");
                 return "OK: Node " + data + " added";
 
             case "ADD_EDGE":
